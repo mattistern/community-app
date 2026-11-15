@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
+  <title>קול הקהילה — מוקאפ פיד</title>
+
+  <!--
+    Static mockup of the resident feed (DESIGN.md §B), for visual review and approval
+    BEFORE any functional component is built (CLAUDE.md, "Mockup First Step").
+
+    Open it directly in a browser (needs internet for the Tailwind + Heebo CDNs).
+    Icons are the exact Lucide glyphs from the installed lucide-react (inline sprite below).
+    Card variants (data mirrors lib/mock-issues.ts):
+      102  בהמתנה · my report, my vote (5) highlighted · image
+      101  בתהליך · admin note · image · 24 votes
+      104  בהמתנה · no image, no location
+      103  בוצע   · admin note · image
+      105  נדחה   · admin note · no image
+  -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --font-sans: "Heebo", ui-sans-serif, system-ui, sans-serif;
+    }
+    @layer components {
+      /* Lucide stroke defaults; kept in a layer so utilities (fill-*, stroke-*) can override. */
+      .i {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex-shrink: 0;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 font-sans text-slate-600 antialiased">
+  <!-- Lucide icon sprite (generated from node_modules/lucide-react) -->
+  <svg width="0" height="0" class="absolute overflow-hidden" aria-hidden="true">
+    <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><path d="M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14"/><path d="M8 6v8"/></symbol>
+    <symbol id="i-layout-dashboard" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+    <symbol id="i-message-square-text" viewBox="0 0 24 24"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/><path d="M7 11h10"/><path d="M7 15h6"/><path d="M7 7h8"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-map-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="i-badge-check" viewBox="0 0 24 24"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m16 9-5.5 5.5L8 12"/></symbol>
+    <symbol id="i-share-2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+  </svg>
+
+  <!-- Mobile-first column (DESIGN.md §1: max-w-md centered container) -->
+  <div class="mx-auto min-h-dvh max-w-md bg-slate-50 md:border-x md:border-slate-200">
+
+    <!-- ───────── Top bar: app title (start) + admin panel link (end, admins only) ───────── -->
+    <header class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white/90 px-4 backdrop-blur">
+      <div class="flex items-center gap-2.5">
+        <span class="grid size-9 place-items-center rounded-xl bg-blue-600 text-white">
+          <svg class="i size-5"><use href="#i-megaphone" /></svg>
+        </span>
+        <h1 class="text-lg font-extrabold tracking-tight text-slate-900">קול הקהילה</h1>
+      </div>
+      <a href="#" aria-label="לוח ניהול" title="לוח ניהול"
+         class="grid size-11 place-items-center rounded-full text-slate-600 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+        <svg class="i size-5"><use href="#i-layout-dashboard" /></svg>
+      </a>
+    </header>
+
+    <!-- ───────── Unread admin message banner (shown only when there is an unread admin chat) ───────── -->
+    <a href="#" class="flex items-center gap-3 bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white">
+      <svg class="i size-5"><use href="#i-message-square-text" /></svg>
+      <span class="flex-1">יש לך הודעה חדשה מהנהלת הקהילה - לחץ לצפייה</span>
+      <svg class="i size-4 opacity-80"><use href="#i-chevron-left" /></svg>
+    </a>
+
+    <!-- ───────── Search + category filter + filter pills ───────── -->
+    <section class="space-y-3 px-4 pt-4" aria-label="חיפוש וסינון">
+      <div class="flex gap-2">
+        <label class="relative flex-1">
+          <span class="sr-only">חיפוש דיווחים</span>
+          <svg class="i pointer-events-none absolute start-3 top-1/2 size-5 -translate-y-1/2 text-slate-400"><use href="#i-search" /></svg>
+          <input type="search" placeholder="חיפוש דיווחים קיימים..."
+                 class="h-11 w-full rounded-xl border border-slate-200 bg-white ps-10 pe-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20" />
+        </label>
+        <button type="button"
+                class="flex h-11 shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+          קטגוריה
+          <svg class="i size-4 text-slate-400"><use href="#i-chevron-down" /></svg>
+        </button>
+      </div>
+
+      <!-- Scrolls horizontally on narrow screens; "הכל" is the active filter here -->
+      <nav aria-label="סינון לפי סטטוס" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <button type="button" class="h-10 shrink-0 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-100">הדיווחים שלי</button>
+        <button type="button" aria-pressed="true" class="h-10 shrink-0 rounded-full border border-slate-900 bg-slate-900 px-4 text-sm font-semibold text-white">הכל</button>
+        <button type="button" class="h-10 shrink-0 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-100">דחוף ביותר</button>
+        <button type="button" class="h-10 shrink-0 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-100">בתהליך</button>
+        <button type="button" class="h-10 shrink-0 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-100">בוצע</button>
+        <button type="button" class="h-10 shrink-0 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-100">נדחה</button>
+      </nav>
+    </section>
+
+    <!-- ───────── Feed ───────── -->
+    <main class="space-y-3 px-4 pb-28 pt-4">
+
+      <!-- Card 102 · בהמתנה · my report · my vote = 5 · image -->
+      <article id="issue-102" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+          <time datetime="2026-11-15T06:10:00.000Z" class="text-xs text-slate-500">לפני 3 שעות</time>
+          <span class="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">בהמתנה</span>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <span class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">תאורה חשמל</span>
+          <span class="inline-flex items-center gap-1 text-xs text-slate-500"><svg class="i size-3.5"><use href="#i-map-pin" /></svg>רחוב הזית 4</span>
+        </div>
+        <h2 class="mt-2.5 text-base font-bold leading-snug text-slate-900">פנס רחוב לא עובד כבר שבועיים</h2>
+        <p class="mt-1.5 text-sm leading-relaxed text-slate-600">הפנס בפינת הרחוב כבוי והקטע חשוך לגמרי בלילה.</p>
+        <button type="button" aria-label="הצג תמונה בגודל מלא" class="mt-3 block w-full overflow-hidden rounded-xl bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+          <img src="public/mock/streetlight.svg" alt="פנס רחוב כבוי" loading="lazy" decoding="async" class="aspect-video w-full object-cover" />
+        </button>
+        <footer class="mt-4 border-t border-slate-100 pt-3">
+          <div class="flex items-center justify-between gap-3">
+            <p class="flex items-center gap-1 text-sm">
+              <span class="font-bold text-slate-900">4.5</span>
+              <svg class="i size-4 fill-amber-400 stroke-amber-400"><use href="#i-star" /></svg>
+              <span class="text-slate-500">(2 הצבעות)</span>
+            </p>
+            <button type="button" class="inline-flex h-11 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <svg class="i size-4"><use href="#i-share-2" /></svg>שתף קישור
+            </button>
+          </div>
+          <p class="mt-3 text-xs font-semibold text-blue-700">הדירוג שלך נשמר · אפשר לעדכן בכל רגע</p>
+          <div role="radiogroup" aria-label="דרגו את רמת הדחיפות" class="mt-2 grid grid-cols-5 gap-1.5">
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">1</span><span class="text-xs leading-tight text-slate-500">לא דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">2</span><span class="text-xs leading-tight text-slate-500">פחות דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">3</span><span class="text-xs leading-tight text-slate-500">בינוני</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">4</span><span class="text-xs leading-tight text-slate-500">דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="true" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-blue-600 bg-blue-600 px-1 py-2 text-white shadow-sm transition active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">5</span><span class="text-xs leading-tight text-white">דחוף מאוד</span>
+            </button>
+          </div>
+        </footer>
+      </article>
+
+      <!-- Card 101 · בתהליך · admin note · image · 24 votes (not voted yet) -->
+      <article id="issue-101" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+          <time datetime="2026-11-14T08:30:00.000Z" class="text-xs text-slate-500">אתמול, 10:30</time>
+          <span class="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-800">בתהליך</span>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <span class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">תשתיות וכבישים</span>
+          <span class="inline-flex items-center gap-1 text-xs text-slate-500"><svg class="i size-3.5"><use href="#i-map-pin" /></svg>רחוב הבנים 12</span>
+        </div>
+        <h2 class="mt-2.5 text-base font-bold leading-snug text-slate-900">בור גדול בכביש ליד הכניסה לגן הילדים</h2>
+        <p class="mt-1.5 text-sm leading-relaxed text-slate-600">בור עמוק שמתמלא במים בכל גשם. רכבים נאלצים לסטות לנתיב הנגדי, מסוכן במיוחד בשעות הבוקר.</p>
+        <div class="mt-3 flex gap-2.5 rounded-xl border border-blue-100 bg-blue-50 p-3">
+          <svg class="i mt-0.5 size-4 text-blue-700"><use href="#i-badge-check" /></svg>
+          <div>
+            <p class="text-xs font-bold text-blue-800">הערת הנהלה רשמית</p>
+            <p class="mt-0.5 text-sm leading-relaxed text-slate-700">הועבר לקבלן המועצה, צפי לתיקון עד סוף השבוע.</p>
+          </div>
+        </div>
+        <button type="button" aria-label="הצג תמונה בגודל מלא" class="mt-3 block w-full overflow-hidden rounded-xl bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+          <img src="public/mock/pothole.svg" alt="בור בכביש" loading="lazy" decoding="async" class="aspect-video w-full object-cover" />
+        </button>
+        <footer class="mt-4 border-t border-slate-100 pt-3">
+          <div class="flex items-center justify-between gap-3">
+            <p class="flex items-center gap-1 text-sm">
+              <span class="font-bold text-slate-900">4.7</span>
+              <svg class="i size-4 fill-amber-400 stroke-amber-400"><use href="#i-star" /></svg>
+              <span class="text-slate-500">(24 הצבעות)</span>
+            </p>
+            <button type="button" class="inline-flex h-11 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <svg class="i size-4"><use href="#i-share-2" /></svg>שתף קישור
+            </button>
+          </div>
+          <p class="mt-3 text-xs font-semibold text-slate-500">דרגו את רמת הדחיפות</p>
+          <div role="radiogroup" aria-label="דרגו את רמת הדחיפות" class="mt-2 grid grid-cols-5 gap-1.5">
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">1</span><span class="text-xs leading-tight text-slate-500">לא דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">2</span><span class="text-xs leading-tight text-slate-500">פחות דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">3</span><span class="text-xs leading-tight text-slate-500">בינוני</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">4</span><span class="text-xs leading-tight text-slate-500">דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">5</span><span class="text-xs leading-tight text-slate-500">דחוף מאוד</span>
+            </button>
+          </div>
+        </footer>
+      </article>
+
+      <!-- Card 104 · בהמתנה · no image, no location -->
+      <article id="issue-104" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+          <time datetime="2026-11-13T21:20:00.000Z" class="text-xs text-slate-500">לפני יומיים</time>
+          <span class="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">בהמתנה</span>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <span class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">ביטחון</span>
+        </div>
+        <h2 class="mt-2.5 text-base font-bold leading-snug text-slate-900">שער הכניסה הצפוני נשאר פתוח בלילות</h2>
+        <p class="mt-1.5 text-sm leading-relaxed text-slate-600">כבר כמה לילות שהשער לא נסגר אוטומטית אחרי 22:00.</p>
+        <footer class="mt-4 border-t border-slate-100 pt-3">
+          <div class="flex items-center justify-between gap-3">
+            <p class="flex items-center gap-1 text-sm">
+              <span class="font-bold text-slate-900">4.7</span>
+              <svg class="i size-4 fill-amber-400 stroke-amber-400"><use href="#i-star" /></svg>
+              <span class="text-slate-500">(3 הצבעות)</span>
+            </p>
+            <button type="button" class="inline-flex h-11 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <svg class="i size-4"><use href="#i-share-2" /></svg>שתף קישור
+            </button>
+          </div>
+          <p class="mt-3 text-xs font-semibold text-slate-500">דרגו את רמת הדחיפות</p>
+          <div role="radiogroup" aria-label="דרגו את רמת הדחיפות" class="mt-2 grid grid-cols-5 gap-1.5">
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">1</span><span class="text-xs leading-tight text-slate-500">לא דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">2</span><span class="text-xs leading-tight text-slate-500">פחות דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">3</span><span class="text-xs leading-tight text-slate-500">בינוני</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">4</span><span class="text-xs leading-tight text-slate-500">דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">5</span><span class="text-xs leading-tight text-slate-500">דחוף מאוד</span>
+            </button>
+          </div>
+        </footer>
+      </article>
+
+      <!-- Card 103 · בוצע · admin note · image -->
+      <article id="issue-103" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+          <time datetime="2026-11-10T15:45:00.000Z" class="text-xs text-slate-500">לפני 5 ימים</time>
+          <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">בוצע</span>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <span class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">ניקיון וגינון</span>
+        </div>
+        <h2 class="mt-2.5 text-base font-bold leading-snug text-slate-900">גיזום עצים בגינה הציבורית</h2>
+        <p class="mt-1.5 text-sm leading-relaxed text-slate-600">ענפים נמוכים חוסמים את השביל ומגיעים לגובה העיניים של ילדים.</p>
+        <div class="mt-3 flex gap-2.5 rounded-xl border border-blue-100 bg-blue-50 p-3">
+          <svg class="i mt-0.5 size-4 text-blue-700"><use href="#i-badge-check" /></svg>
+          <div>
+            <p class="text-xs font-bold text-blue-800">הערת הנהלה רשמית</p>
+            <p class="mt-0.5 text-sm leading-relaxed text-slate-700">הגיזום בוצע ביום ראשון. תודה על הדיווח!</p>
+          </div>
+        </div>
+        <button type="button" aria-label="הצג תמונה בגודל מלא" class="mt-3 block w-full overflow-hidden rounded-xl bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+          <img src="public/mock/garden.svg" alt="גינה ציבורית" loading="lazy" decoding="async" class="aspect-video w-full object-cover" />
+        </button>
+        <footer class="mt-4 border-t border-slate-100 pt-3">
+          <div class="flex items-center justify-between gap-3">
+            <p class="flex items-center gap-1 text-sm">
+              <span class="font-bold text-slate-900">3.1</span>
+              <svg class="i size-4 fill-amber-400 stroke-amber-400"><use href="#i-star" /></svg>
+              <span class="text-slate-500">(11 הצבעות)</span>
+            </p>
+            <button type="button" class="inline-flex h-11 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <svg class="i size-4"><use href="#i-share-2" /></svg>שתף קישור
+            </button>
+          </div>
+          <p class="mt-3 text-xs font-semibold text-slate-500">דרגו את רמת הדחיפות</p>
+          <div role="radiogroup" aria-label="דרגו את רמת הדחיפות" class="mt-2 grid grid-cols-5 gap-1.5">
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">1</span><span class="text-xs leading-tight text-slate-500">לא דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">2</span><span class="text-xs leading-tight text-slate-500">פחות דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">3</span><span class="text-xs leading-tight text-slate-500">בינוני</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">4</span><span class="text-xs leading-tight text-slate-500">דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">5</span><span class="text-xs leading-tight text-slate-500">דחוף מאוד</span>
+            </button>
+          </div>
+        </footer>
+      </article>
+
+      <!-- Card 105 · נדחה · admin note · no image -->
+      <article id="issue-105" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+          <time datetime="2026-11-08T10:00:00.000Z" class="text-xs text-slate-500">לפני שבוע</time>
+          <span class="rounded-full bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700">נדחה</span>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <span class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">אחר</span>
+        </div>
+        <h2 class="mt-2.5 text-base font-bold leading-snug text-slate-900">בקשה להוספת ספסל בתחנת האוטובוס</h2>
+        <p class="mt-1.5 text-sm leading-relaxed text-slate-600">קשישים רבים ממתינים בעמידה, יהיה נחמד להוסיף ספסל וצל.</p>
+        <div class="mt-3 flex gap-2.5 rounded-xl border border-blue-100 bg-blue-50 p-3">
+          <svg class="i mt-0.5 size-4 text-blue-700"><use href="#i-badge-check" /></svg>
+          <div>
+            <p class="text-xs font-bold text-blue-800">הערת הנהלה רשמית</p>
+            <p class="mt-0.5 text-sm leading-relaxed text-slate-700">התחנה באחריות משרד התחבורה, הפנייה הועברה אליהם.</p>
+          </div>
+        </div>
+        <footer class="mt-4 border-t border-slate-100 pt-3">
+          <div class="flex items-center justify-between gap-3">
+            <p class="flex items-center gap-1 text-sm">
+              <span class="font-bold text-slate-900">2.7</span>
+              <svg class="i size-4 fill-amber-400 stroke-amber-400"><use href="#i-star" /></svg>
+              <span class="text-slate-500">(6 הצבעות)</span>
+            </p>
+            <button type="button" class="inline-flex h-11 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <svg class="i size-4"><use href="#i-share-2" /></svg>שתף קישור
+            </button>
+          </div>
+          <p class="mt-3 text-xs font-semibold text-slate-500">דרגו את רמת הדחיפות</p>
+          <div role="radiogroup" aria-label="דרגו את רמת הדחיפות" class="mt-2 grid grid-cols-5 gap-1.5">
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">1</span><span class="text-xs leading-tight text-slate-500">לא דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">2</span><span class="text-xs leading-tight text-slate-500">פחות דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">3</span><span class="text-xs leading-tight text-slate-500">בינוני</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">4</span><span class="text-xs leading-tight text-slate-500">דחוף</span>
+            </button>
+            <button type="button" role="radio" aria-checked="false" class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-slate-200 bg-white px-1 py-2 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+              <span class="text-base font-bold leading-none">5</span><span class="text-xs leading-tight text-slate-500">דחוף מאוד</span>
+            </button>
+          </div>
+        </footer>
+      </article>
+
+      <!-- Infinite-scroll sentinel: next batch loads when this scrolls into view -->
+      <div class="flex items-center justify-center gap-2 py-4 text-sm text-slate-500" aria-live="polite">
+        <span class="size-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-500"></span>
+        טוען עוד דיווחים…
+      </div>
+    </main>
+
+    <!-- ───────── Floating action button ───────── -->
+    <a href="#"
+       class="fixed inset-x-0 bottom-5 z-40 mx-auto flex h-14 w-fit items-center gap-2 rounded-full bg-blue-600 ps-4 pe-5 text-base font-bold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+      <svg class="i size-6"><use href="#i-plus" /></svg>
+      דווח על בעיה חדשה
+    </a>
+  </div>
+</body>
+</html>
