@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { LayoutDashboard, LogOut, Megaphone } from "lucide-react";
 import { DemoTools } from "@/components/demo/demo-tools";
+import { InstallButton } from "@/components/pwa/install-button";
 import { signOut, useSessionState } from "@/lib/local-session";
 
 /**
@@ -35,6 +36,7 @@ export function FeedHeader() {
             <LayoutDashboard aria-hidden className="size-5" />
           </Link>
         )}
+        <InstallButton />
         <DemoTools variant="icon" />
         <button
           type="button"

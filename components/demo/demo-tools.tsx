@@ -9,9 +9,10 @@ import {
   resetDemoIssues,
 } from "@/lib/local-issues";
 import { resetChats } from "@/lib/local-chat";
+import { resetComments } from "@/lib/local-comments";
 import { resetWhitelist } from "@/lib/local-whitelist";
 import { MEDIA_GRACE_PERIOD_MS } from "@/lib/media-cleanup";
-import { MOCK_CURRENT_USER_PHONE } from "@/lib/mock-issues";
+import { getSession } from "@/lib/local-session";
 
 function describeFastForward(removed: number): string {
   if (removed === 0) return "עברו 7 ימים. אין מדיה שהגיעה למחיקה.";
@@ -72,7 +73,8 @@ function DemoDialog({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 onClick={() => {
-                  clearLastPostAt(MOCK_CURRENT_USER_PHONE);
+                  const phone = getSession()?.phone;
+                  if (phone) clearLastPostAt(phone);
                   setMessage("מגבלת הדיווח אופסה. אפשר לדווח שוב מיד.");
                 }}
                 className="flex w-full items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 text-start transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
@@ -100,6 +102,7 @@ function DemoDialog({ onClose }: { onClose: () => void }) {
                         resetDemoIssues();
                         resetWhitelist();
                         resetChats();
+                        resetComments();
                         setConfirmingReset(false);
                         setMessage("נתוני הדמו אופסו.");
                       }}

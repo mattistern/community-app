@@ -12,6 +12,7 @@ import {
   type ChatSender,
   type ChatThread,
 } from "./chat";
+import { getIssues } from "./local-issues";
 import { getSession } from "./local-session";
 import { createPersistedStore } from "./persisted-store";
 import type { Issue } from "./types";
@@ -28,6 +29,13 @@ const store = createPersistedStore<ChatThread[]>({
   key: "community-app:chats",
   version: 1,
   seed: () => [],
+  // A private thread must never outlive its issue: a new issue can be given a
+  // deleted one's id, and would show the old conversation to a stranger.
+  onLoad: (threads) => {
+    const live = new Set(getIssues().map((issue) => issue.id));
+    const kept = threads.filter((thread) => live.has(thread.issueId));
+    return kept.length === threads.length ? threads : kept;
+  },
 });
 
 /** The threads, or null until the browser has loaded them (and on the server). */
@@ -120,6 +128,22 @@ export function markChatRead(issueId: string, now: number = Date.now()): void {
   } catch {
     // Storage full: the thread just stays marked unread; nothing to tell the reader.
   }
+}
+
+/** Removes (and returns) the threads of the given issues, e.g. when they are deleted. */
+export function takeChatsForIssues(issueIds: readonly string[]): ChatThread[] {
+  const ids = new Set(issueIds);
+  const all = store.get();
+  const taken = all.filter((thread) => ids.has(thread.issueId));
+  if (taken.length > 0) store.set(all.filter((thread) => !ids.has(thread.issueId)));
+  return taken;
+}
+
+/** Puts threads back (the admin's undo of a deletion); one whose issue has since been given a new thread is skipped. */
+export function restoreChats(taken: readonly ChatThread[]): void {
+  const have = new Set(store.get().map((thread) => thread.issueId));
+  const back = taken.filter((thread) => !have.has(thread.issueId));
+  if (back.length > 0) store.set([...store.get(), ...back]);
 }
 
 /** Demo: removes every thread. */

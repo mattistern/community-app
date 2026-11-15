@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   DEFAULT_FILTERS,
   filterAndSortIssues,
@@ -16,10 +16,14 @@ import { FeedEmptyState } from "./feed-empty-state";
 import { FeedFilterBar } from "./feed-filter-bar";
 import { FeedSkeleton } from "./feed-skeleton";
 import { IssueCard } from "./issue-card";
+import { LoadMore } from "./load-more";
 import { NewIssueFlow } from "./new-issue-flow";
 
 /** Cards whose thumbnails load immediately; the rest load lazily on scroll. */
 const EAGER_MEDIA_COUNT = 2;
+
+/** Cards loaded per batch; the feed never renders the whole list at once. */
+const PAGE_SIZE = 10;
 
 /** How long a freshly sent report stays ringed. */
 const HIGHLIGHT_MS = 3000;
@@ -40,6 +44,9 @@ export function Feed({ currentUserPhone }: FeedProps) {
   const [filters, setFilters] = useState<FeedFilters>(DEFAULT_FILTERS);
   const [urgencySnapshot, setUrgencySnapshot] = useState<UrgencySnapshot>();
   const [highlightedId, setHighlightedId] = useState<string>();
+  // How many cards are on screen; grows as the resident scrolls, resets with the filters.
+  const [shown, setShown] = useState(PAGE_SIZE);
+  const loadMore = useCallback(() => setShown((count) => count + PAGE_SIZE), []);
 
   useEffect(() => {
     if (!highlightedId) return;
@@ -56,19 +63,23 @@ export function Feed({ currentUserPhone }: FeedProps) {
     // from under the resident's finger while they vote.
     setUrgencySnapshot(view === "דחוף ביותר" ? snapshotUrgency(issues) : undefined);
     setFilters((current) => ({ ...current, view }));
+    setShown(PAGE_SIZE);
   };
 
   const handleQueryChange = (query: string) => {
     setFilters((current) => ({ ...current, query }));
+    setShown(PAGE_SIZE);
   };
 
   const handleCategoryChange = (category: IssueCategory | null) => {
     setFilters((current) => ({ ...current, category }));
+    setShown(PAGE_SIZE);
   };
 
   const handleClearFilters = () => {
     setFilters(DEFAULT_FILTERS);
     setUrgencySnapshot(undefined);
+    setShown(PAGE_SIZE);
   };
 
   const handleCreated = (issue: Issue) => {
@@ -108,18 +119,25 @@ export function Feed({ currentUserPhone }: FeedProps) {
           {visibleIssues.length === 0 ? (
             <FeedEmptyState filters={filters} onClear={handleClearFilters} />
           ) : (
-            <ul className="space-y-3">
-              {visibleIssues.map((issue, index) => (
-                <li key={issue.id}>
-                  <IssueCard
-                    issue={issue}
-                    onVote={voteOnIssue}
-                    eagerMedia={index < EAGER_MEDIA_COUNT}
-                    highlighted={issue.id === highlightedId}
-                  />
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="space-y-3">
+                {visibleIssues.slice(0, shown).map((issue, index) => (
+                  <li key={issue.id}>
+                    <IssueCard
+                      issue={issue}
+                      onVote={voteOnIssue}
+                      eagerMedia={index < EAGER_MEDIA_COUNT}
+                      highlighted={issue.id === highlightedId}
+                    />
+                  </li>
+                ))}
+              </ul>
+              <LoadMore
+                shown={Math.min(shown, visibleIssues.length)}
+                total={visibleIssues.length}
+                onLoadMore={loadMore}
+              />
+            </>
           )}
         </div>
       )}

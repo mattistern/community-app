@@ -14,16 +14,15 @@ import {
   type AdminFilters,
   type AdminSort,
 } from "@/lib/admin-issues";
+import { deleteIssuesWithData, restoreDeleted, type DeletedBundle } from "@/lib/issue-data";
 import {
-  deleteIssues,
-  restoreIssues,
   setAdminNote,
   setIssueStatus,
   setIssuesStatus,
   useIssues,
 } from "@/lib/local-issues";
 import { isResolvedStatus } from "@/lib/media-cleanup";
-import { ISSUE_STATUSES, type Issue, type IssueStatus } from "@/lib/types";
+import { ISSUE_STATUSES, type IssueStatus } from "@/lib/types";
 import { cn } from "@/lib/cn";
 import { useNow } from "@/lib/use-minute-clock";
 import { IssueDetailsDialog } from "./issue-details-dialog";
@@ -74,8 +73,8 @@ function Skeleton() {
 interface ToastState {
   id: number;
   message: string;
-  /** Deleted issues, so the toast can offer to bring them back. */
-  undo?: Issue[];
+  /** Deleted issues with their comments and chats, so the toast can offer to bring them back. */
+  undo?: DeletedBundle;
 }
 
 /** ניהול פניות: find, review, re-status, annotate and delete the community's reports. */
@@ -92,7 +91,7 @@ export function IssuesManager() {
 
   if (issues === null || now === null) return <Skeleton />;
 
-  const showToast = (message: string, undo?: Issue[]) =>
+  const showToast = (message: string, undo?: DeletedBundle) =>
     setToast({ id: ++toastCounter.current, message, undo });
 
   const visible = filterAndSortForAdmin(issues, filters);
@@ -141,9 +140,10 @@ export function IssuesManager() {
 
   const confirmDelete = () => {
     if (!deleteIds) return;
-    const removed = deleteIssues(deleteIds);
+    const removed = deleteIssuesWithData(deleteIds);
+    const count = removed.issues.length;
     setSelection((current) => new Set([...current].filter((id) => !deleteIds.includes(id))));
-    showToast(removed.length === 1 ? "הפנייה נמחקה." : `${removed.length} פניות נמחקו.`, removed);
+    showToast(count === 1 ? "הפנייה נמחקה." : `${count} פניות נמחקו.`, removed);
   };
 
   const hasFilters =
@@ -333,7 +333,7 @@ export function IssuesManager() {
           visibleMs={toast.undo ? 7000 : undefined}
           action={
             toast.undo
-              ? { label: "ביטול", onClick: () => restoreIssues(toast.undo ?? []) }
+              ? { label: "ביטול", onClick: () => toast.undo && restoreDeleted(toast.undo) }
               : undefined
           }
         />
